@@ -1,8 +1,4 @@
-#!/usr/bin/php
 <?php
-
-require_once("options.php");
-require_once("util.php");
 
 class Globals {
 	public static	$debug = FALSE,

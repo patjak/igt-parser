@@ -1,0 +1,8 @@
+#!/usr/bin/php
+<?php
+
+require_once("options.php");
+require_once("util.php");
+require_once("main.php");
+
+?>
