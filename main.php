@@ -9,9 +9,10 @@ msg("");
 
 $opts = array(	"path:",
 		"debug",
-		"verbose");
+		"verbose",
+		"summary");
 
-$commands = Options::parse($argv, $opts);
+$args = Options::parse($argv, $opts);
 
 if (isset(Options::$options["debug"]))
 	Globals::$debug = TRUE;
@@ -20,18 +21,27 @@ if (isset(Options::$options["verbose"]))
 	Globals::$verbose = TRUE;
 
 $path = isset(Options::$options["path"]) ? Options::$options["path"] : FALSE;
+$summary = isset(Options::$options["summary"]) ? Options::$options["summary"] : FALSE;
 
 if ($path === FALSE)
 	print_usage(1);
 
-$os = isset($commands[1]) ? $commands[1] : FALSE;
-$machine = isset($commands[2]) ? $commands[2] : FALSE;
-$date = isset($commands[3]) ? $commands[3] : FALSE;
-$test = isset($commands[4]) ? $commands[4] : FALSE;
+$cmd = isset($args[1]) ? $args[1] : FALSE;
 
-if ($os === FALSE) {
-	print_oses($path);
-	print_usage(1);
+switch (strtolower($cmd)) {
+case "view":
+	$os = isset($args[2]) ? $args[2] : FALSE;
+	$machine = isset($args[3]) ? $args[3] : FALSE;
+	$date = isset($args[4]) ? $args[4] : FALSE;
+	$test = isset($args[5]) ? $args[5] : FALSE;
+	cmd_view_testrun($path, $os, $machine, $date, $test);
+	return 0;
+
+case "summary":
+	$os = isset($args[2]) ? $args[2] : FALSE;
+	$date = isset($args[3]) ? $args[3] : FALSE;
+	cmd_os_date_summary($path, $os, $date);
+	return 0;
 }
 
 function get_oses($path) { return Util::get_directory_contents($path, 1); }
@@ -39,9 +49,13 @@ function get_machines($path, $os) { return Util::get_directory_contents($path."/
 function get_dates($path, $os, $machine) { return Util::get_directory_contents($path."/".$os."/".$machine, 1); }
 function get_results($path, $os, $machine, $date)
 {
-	$file = file_get_contents($path."/".$os."/".$machine."/".$date."/results.json");
+	$filename = $path."/".$os."/".$machine."/".$date."/results.json";
+	if (!file_exists($filename))
+		return FALSE;
+
+	$file = file_get_contents($filename);
 	if ($file === FALSE)
-		fatal("Failed to open results.json file");
+		return FALSE;
 
 	$json = json_decode($file, TRUE);
 	if ($json == NULL)
@@ -51,32 +65,32 @@ function get_results($path, $os, $machine, $date)
 }
 
 // Validate input
-$oses = get_oses($path);
-if (!in_array($os, $oses))
-	fatal("Invalid OS specified");
+function validate_input($path, $os, $machine, $date, $test)
+{
+	if ($os !== FALSE) {
+		$oses = get_oses($path);
+		if (!in_array($os, $oses))
+			fatal("Invalid OS specified");
+	}
 
-$machines = get_machines($path, $os);
-if (!in_array($machine, $machines))
-	fatal("Invalid OS and machine combination specified");
+	if ($machine !== FALSE) {
+		$machines = get_machines($path, $os);
+		if (!in_array($machine, $machines))
+			fatal("Invalid OS and machine combination specified");
+	}
 
-$dates = get_dates($path, $os, $machine);
-if (!in_array($date, $dates))
-	fatal("Invalid OS, machine and date combination specified");
+	if ($date !== FALSE && $os !== FALSE && $machine !== FALSE) {
+		$dates = get_dates($path, $os, $machine);
+		if (!in_array($date, $dates))
+			fatal("Invalid OS, machine and date combination specified");
+	}
 
-if ($machine === FALSE) {
-	print_machines($path, $os);
-	print_usage(1);
+	if ($test !== FALSE && $os !== FALSE && $machine !== FALSE && $date !== FALSE) {
+		$results = get_results($path, $os, $machine, $date);
+		if (!array_key_exists($test, $results["tests"]))
+			fatal("Invalid OS, machine, date and test combination specified");
+	}
 }
-
-if ($date === FALSE) {
-	print_dates($path, $os, $machine);
-	print_usage(1);
-}
-
-if ($test === FALSE)
-	print_results($path, $os, $machine, $date);
-else
-	print_test($path, $os, $machine, $date, $test);
 
 function print_oses($path)
 {
@@ -126,83 +140,17 @@ function print_dates($path, $os, $machine)
 	msg("");
 }
 
-function print_test($path, $os, $machine, $date, $test_name)
-{
-	$results = get_results($path, $os, $machine, $date);
-
-	foreach ($results["tests"] as $name => $test) {
-		if ($name == $test_name) {
-			green("Test: ".$name);
-			msg($test["igt-version"]);
-			msg("Result: ".$test["result"]);
-			msg("Time: start=".$test["time"]["start"]." end=".$test["time"]["end"]);
-
-			info("\nout:");
-			msg($test["out"]);
-
-			error("err:");
-			msg($test["err"]);
-
-			info("dmesg: ");
-			msg($test["dmesg"]);
-			// var_dump($test);
-		}
-	}
-}
-
-function print_results($path, $os, $machine, $date)
-{
-	$results = get_results($path, $os, $machine, $date);
-
-	msg("Results for ".$os." / ".$machine." / ".$date);
-
-	$summary = array();
-
-	$i = 1;
-	foreach ($results["tests"] as $name => $test) {
-		$result = $test["result"];
-		if (isset($summary[$result]))
-			$summary[$result]++;
-		else
-			$summary[$result] = 0;
-
-		$result = $test["result"];
-		$result = Util::pad_str($result, 12);
-		$str = $i.") ".$result.$name;
-
-		switch (trim($result)) {
-		case "pass":
-			green($str);
-			break;
-		case "warn":
-			info($str);
-			break;
-		case "fail":
-		case "crash":
-			error($str);
-			break;
-		case "skip":
-			if (!Globals::$verbose) {
-				$i--;
-				break;
-			}
-		default:
-			msg($str);
-		}
-		$i++;
-	}
-
-	msg("\nSummary:");
-	foreach ($summary as $name => $num) {
-		msg(" * ".$name.":\t".$num);
-	}
-}
-
 function print_usage($errno)
 {
 	global $argv;
 
-	msg("Usage: ".$argv[0]." --path=<path-to-igt-results><os> <machine> <date>\n");
+	$execname = basename($argv[0]);
+
+	msg("Usage: ".$execname." --path=<path-to-igt-results> <command> [arguments] ");
+	msg("\nCommands:");
+	msg("\tview <os> <machine> <date>");
+	msg("\tsummary <os> <date>");
+	msg("\tregression <os> <machine> <date-1> <date-2>");
 
 	exit($errno);
 }
