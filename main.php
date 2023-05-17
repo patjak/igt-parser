@@ -42,6 +42,10 @@ case "summary":
 	$date = isset($args[3]) ? $args[3] : FALSE;
 	cmd_os_date_summary($path, $os, $date);
 	return 0;
+
+default:
+	error("No command specified\n");
+	print_usage(1);
 }
 
 function get_oses($path) { return Util::get_directory_contents($path, 1); }
