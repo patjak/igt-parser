@@ -26,7 +26,7 @@ function print_test($path, $os, $machine, $date, $test_name)
 		$i++;
 	}
 
-	error("Test not found");
+	fatal("Test not found");
 }
 
 function cmd_view_testrun($path, $os, $machine, $date, $test)
