@@ -4,24 +4,29 @@ function print_test($path, $os, $machine, $date, $test_name)
 {
 	$results = get_results($path, $os, $machine, $date);
 
+	$i = 1;
 	foreach ($results["tests"] as $name => $test) {
-		if ($name == $test_name) {
+		if ($name == $test_name || (is_numeric($test_name) && $test_name == $i)) {
 			green("Test: ".$name);
 			msg($test["igt-version"]);
 			msg("Result: ".$test["result"]);
 			if (isset($test["time"]))
 				msg("Time: start=".$test["time"]["start"]." end=".$test["time"]["end"]);
 
-			info("\nout:");
+			info("\nstdout:");
 			msg($test["out"]);
 
-			error("err:");
+			error("stderr:");
 			msg($test["err"]);
 
 			info("dmesg: ");
 			msg($test["dmesg"]);
+			return;
 		}
+		$i++;
 	}
+
+	error("Test not found");
 }
 
 function cmd_view_testrun($path, $os, $machine, $date, $test)

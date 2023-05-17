@@ -89,7 +89,7 @@ function validate_input($path, $os, $machine, $date, $test)
 			fatal("Invalid OS, machine and date combination specified");
 	}
 
-	if ($test !== FALSE && $os !== FALSE && $machine !== FALSE && $date !== FALSE) {
+	if ($test !== FALSE && !is_numeric($test) && $os !== FALSE && $machine !== FALSE && $date !== FALSE) {
 		$results = get_results($path, $os, $machine, $date);
 		if (!array_key_exists($test, $results["tests"]))
 			fatal("Invalid OS, machine, date and test combination specified");
