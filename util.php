@@ -92,6 +92,7 @@ class Util {
 		$res = shell_exec("find ".$path." -maxdepth ".$depth." 2> /dev/null");
 		$rows = explode(PHP_EOL, $res);
 		array_shift($rows);
+		array_pop($rows);
 
 		$entries = array();
 
