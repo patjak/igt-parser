@@ -43,6 +43,8 @@ function cmd_view_testrun($path, $os, $machine, $date, $test)
 		print_usage(1);
 	}
 
+	print_machine_info_on_date($path, $os, $machine, $date);
+
 	if ($test === FALSE)
 		print_results($path, $os, $machine, $date);
 	else

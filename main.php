@@ -128,6 +128,18 @@ function print_machines($path, $os)
 	msg("");
 }
 
+function print_machine_info_on_date($path, $os, $machine, $date)
+{
+	$r = get_results($path, $os, $machine, $date);
+	$vga_info = file_get_contents($path."/".$os."/".$machine."/".$date."/vga-info.txt");
+
+	msg(Util::pad_str("Machine:", 16).$machine);
+	msg(Util::pad_str("uname: ", 16).$r["uname"]);
+	$time = round($r["time_elapsed"]["end"] - $r["time_elapsed"]["start"], 2);
+	msg(Util::pad_str("Time elapsed: ", 16).$time." seconds");
+	msg(Util::pad_str("VGA info: ", 16).$vga_info);
+}
+
 function print_dates($path, $os, $machine)
 {
 	$dates = Util::get_directory_contents($path."/".$os."/".$machine, 1);
