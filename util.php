@@ -3,10 +3,10 @@
 function msg($msg, $eol = TRUE) { echo $msg; if ($eol) { echo "\n"; } }
 function fatal($msg) { echo "\e[31m".$msg."\e[0m\n"; if (Globals::$debug) { debug_print_backtrace(); } exit(1); }
 function error($msg, $eol = TRUE) { echo "\e[31m".$msg."\e[0m"; if ($eol) { echo "\n"; }}
-function info($msg, $eol = TRUE) { echo "\e[36m".$msg."\e[0m\n"; if ($eol) { echo "\n"; }}
-function green($msg, $eol = TRUE) { echo "\e[32m".$msg."\e[0m\n"; if ($eol) { echo "\n"; }}
-function debug($msg, $eol = TRUE) { if (Globals::$debug) { echo "\e[33m".$msg."\e[0m\n"; if ($eol) { echo "\n"; } } }
-function debug_git($msg, $eol = TRUE) { if (Globals::$debug_git) { echo "\e[33m".$msg."\e[0m\n"; if ($eol) { echo "\n"; }} }
+function info($msg, $eol = TRUE) { echo "\e[36m".$msg."\e[0m"; if ($eol) { echo "\n"; }}
+function green($msg, $eol = TRUE) { echo "\e[32m".$msg."\e[0m"; if ($eol) { echo "\n"; }}
+function debug($msg, $eol = TRUE) { if (Globals::$debug) { echo "\e[33m".$msg."\e[0m"; if ($eol) { echo "\n"; } } }
+function debug_git($msg, $eol = TRUE) { if (Globals::$debug_git) { echo "\e[33m".$msg."\e[0m"; if ($eol) { echo "\n"; }} }
 function delimiter() { echo "\e[33m----------\e[0m\n"; }
 
 class Util {
