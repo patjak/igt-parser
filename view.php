@@ -6,7 +6,7 @@ function print_test($path, $os, $machine, $date, $test_name)
 
 	$i = 1;
 	foreach ($results["tests"] as $name => $test) {
-		if ($name == $test_name || (is_numeric($test_name) && $test_name == $i)) {
+		if ($name == $test_name || (is_numeric($test_name) && $test_name == $i && $test["result"] != "skip")) {
 			green("Test: ".$name);
 			msg($test["igt-version"]);
 			msg("Result: ".$test["result"]);
@@ -23,7 +23,8 @@ function print_test($path, $os, $machine, $date, $test_name)
 			msg($test["dmesg"]);
 			return;
 		}
-		$i++;
+		if ($test["result"] != "skip")
+			$i++;
 	}
 
 	fatal("Test not found");
