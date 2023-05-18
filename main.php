@@ -43,6 +43,14 @@ case "summary":
 	cmd_os_date_summary($path, $os, $date);
 	return 0;
 
+case "regression":
+	$os = isset($args[2]) ? $args[2] : FALSE;
+	$machine = isset($args[3]) ? $args[3] : FALSE;
+	$date1 = isset($args[4]) ? $args[4] : FALSE;
+	$date2 = isset($args[5]) ? $args[5] : FALSE;
+	cmd_regression($path, $os, $machine, $date1, $date2);
+	return 0;
+
 default:
 	error("No command specified\n");
 	print_usage(1);
@@ -169,7 +177,7 @@ function print_usage($errno)
 	msg("\nCommands:");
 	msg("\tview <os> <machine> <date>");
 	msg("\tsummary <os> <date>");
-	msg("\tregression <os> <machine> <date-1> <date-2>");
+	msg("\tregression <os> <machine> <date 1> [date 2]");
 
 	exit($errno);
 }
