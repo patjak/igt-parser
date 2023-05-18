@@ -131,7 +131,10 @@ function print_machines($path, $os)
 function print_machine_info_on_date($path, $os, $machine, $date)
 {
 	$r = get_results($path, $os, $machine, $date);
-	$vga_info = file_get_contents($path."/".$os."/".$machine."/".$date."/vga-info.txt");
+	$filename = $path."/".$os."/".$machine."/".$date."/vga-info.txt";
+	$vga_info = "";
+	if (file_exists($filename))
+		$vga_info = file_get_contents($filename);
 
 	msg(Util::pad_str("Machine:", 16).$machine);
 	msg(Util::pad_str("uname: ", 16).$r["uname"]);
