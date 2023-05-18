@@ -34,9 +34,6 @@ function cmd_os_date_summary($path, $os, $date)
 		}
 		$available_dates = array_unique($available_dates);
 		sort($available_dates);
-		msg("Available dates:");
-		foreach ($available_dates as $date)
-			msg(" * ".$date);
 
 		msg("");
 		$last_date = array_pop($available_dates);
