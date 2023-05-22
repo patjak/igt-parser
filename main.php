@@ -179,11 +179,12 @@ function print_usage($errno)
 	$execname = basename($argv[0]);
 
 	msg("Usage: ".$execname." --path=<path-to-igt-results> <command> [arguments] ");
+	msg("\n--path is not required if IGT_RESULTS_PATH is set");
 	msg("\nCommands:");
-	msg("\tlist [os] [machine]");
-	msg("\tview <os> <machine> <date>");
-	msg("\tsummary <os> <date>");
-	msg("\tregression <os> <machine> <date 1> [date 2]");
+	msg("  list [os] [machine]");
+	msg("  view <os> <machine> <date>");
+	msg("  summary <os> <date>");
+	msg("  regression <os> <machine> <date 1> [date 2]");
 
 	exit($errno);
 }
