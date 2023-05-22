@@ -23,8 +23,13 @@ if (isset(Options::$options["verbose"]))
 $path = isset(Options::$options["path"]) ? Options::$options["path"] : FALSE;
 $summary = isset(Options::$options["summary"]) ? Options::$options["summary"] : FALSE;
 
-if ($path === FALSE)
-	print_usage(1);
+if ($path === FALSE) {
+	$path = getenv("IGT_RESULTS_PATH", TRUE);
+	if ($path === FALSE) {
+		error("Missing --path and IGT_RESULTS_PATH is not set");
+		print_usage(1);
+	}
+}
 
 $cmd = isset($args[1]) ? $args[1] : FALSE;
 
