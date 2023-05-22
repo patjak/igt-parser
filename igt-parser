@@ -3,6 +3,7 @@
 
 require_once("options.php");
 require_once("util.php");
+require_once("list.php");
 require_once("view.php");
 require_once("summary.php");
 require_once("regression.php");

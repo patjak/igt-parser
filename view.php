@@ -34,20 +34,14 @@ function cmd_view_testrun($path, $os, $machine, $date, $test)
 {
 	validate_input($path, $os, $machine, $date, $test);
 
-	if ($os === FALSE) {
-		print_oses($path);
-		print_usage(1);
-	}
+	if ($os === FALSE)
+		fatal("No OS specified");
 
-	if ($machine === FALSE) {
-		print_machines($path, $os);
-		print_usage(1);
-	}
+	if ($machine === FALSE)
+		fatal("No machine specified");
 
-	if ($date === FALSE) {
-		print_dates($path, $os, $machine);
-		print_usage(1);
-	}
+	if ($date === FALSE)
+		fatal("No date specified");
 
 	print_machine_info_on_date($path, $os, $machine, $date);
 

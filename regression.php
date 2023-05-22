@@ -2,20 +2,16 @@
 
 function cmd_regression($path, $os, $machine, $date1, $date2)
 {
-	if ($os === FALSE) {
-		print_oses($path);
-		print_usage(1);
-	}
+	validate_input($path, $os, $machine, $date1, FALSE);
 
-	if ($machine === FALSE) {
-		print_machines($path, $os);
-		print_usage(1);
-	}
+	if ($os === FALSE)
+		fatal("No OS specified");
 
-	if ($date1 === FALSE) {
-		print_dates($path, $os, $machine);
-		print_usage(1);
-	}
+	if ($machine === FALSE)
+		fatal("No machine specified");
+
+	if ($date1 === FALSE)
+		fatal("No date specified");
 
 	if ($date2 === FALSE) {
 		$dates = get_dates($path, $os, $machine);

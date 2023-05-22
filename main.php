@@ -34,6 +34,12 @@ if ($path === FALSE) {
 $cmd = isset($args[1]) ? $args[1] : FALSE;
 
 switch (strtolower($cmd)) {
+case "list":
+	$os = isset($args[2]) ? $args[2] : FALSE;
+	$machine = isset($args[3]) ? $args[3] : FALSE;
+	cmd_list($path, $os, $machine);
+	return 0;
+
 case "view":
 	$os = isset($args[2]) ? $args[2] : FALSE;
 	$machine = isset($args[3]) ? $args[3] : FALSE;
@@ -113,13 +119,11 @@ function print_oses($path)
 {
 	$oses = get_oses($path);
 
-	error("No OS specified\n");
-
 	msg("Available OSes");
 	foreach($oses as $os) {
 		if ($os == "")
 			continue;
-		msg(" * ".$os);
+		msg("  ".$os);
 	}
 
 	msg("");
@@ -129,13 +133,11 @@ function print_machines($path, $os)
 {
 	$machines = Util::get_directory_contents($path."/".$os, 1);
 
-	error("No machine specified\n");
-
 	msg("Available machines");
 	foreach($machines as $machine) {
 		if ($machine == "")
 			continue;
-		msg(" * ".$machine);
+		msg("  ".$machine);
 	}
 
 	msg("");
@@ -160,13 +162,11 @@ function print_dates($path, $os, $machine)
 {
 	$dates = Util::get_directory_contents($path."/".$os."/".$machine, 1);
 
-	error("No date specified\n");
-
 	msg("Available dates");
 	foreach($dates as $date) {
 		if ($date == "")
 			continue;
-		msg(" * ".$date);
+		msg("  ".$date);
 	}
 
 	msg("");
@@ -180,6 +180,7 @@ function print_usage($errno)
 
 	msg("Usage: ".$execname." --path=<path-to-igt-results> <command> [arguments] ");
 	msg("\nCommands:");
+	msg("\tlist [os] [machine]");
 	msg("\tview <os> <machine> <date>");
 	msg("\tsummary <os> <date>");
 	msg("\tregression <os> <machine> <date 1> [date 2]");

@@ -18,10 +18,8 @@ function cmd_os_date_summary($path, $os, $date)
 {
 	validate_input($path, $os, FALSE, $date, FALSE);
 
-	if ($os === FALSE) {
-		print_oses($path);
-		print_usage(1);
-	}
+	if ($os === FALSE)
+		fatal("No OS specified");
 
 	if ($date === FALSE) {
 		$available_dates = array();
@@ -35,11 +33,9 @@ function cmd_os_date_summary($path, $os, $date)
 		$available_dates = array_unique($available_dates);
 		sort($available_dates);
 
-		msg("");
 		$last_date = array_pop($available_dates);
 		cmd_os_date_summary($path, $os, $last_date);
-
-		print_usage(1);
+		return;
 	}
 
 	msg("Results summary for OS ".$os." on date ".$date);
