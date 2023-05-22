@@ -7,7 +7,12 @@ function info($msg, $eol = TRUE) { echo "\e[36m".$msg."\e[0m"; if ($eol) { echo 
 function green($msg, $eol = TRUE) { echo "\e[32m".$msg."\e[0m"; if ($eol) { echo "\n"; }}
 function debug($msg, $eol = TRUE) { if (Globals::$debug) { echo "\e[33m".$msg."\e[0m"; if ($eol) { echo "\n"; } } }
 function debug_git($msg, $eol = TRUE) { if (Globals::$debug_git) { echo "\e[33m".$msg."\e[0m"; if ($eol) { echo "\n"; }} }
-function delimiter() { echo "\e[33m----------\e[0m\n"; }
+function delimiter($len = 80)
+{
+	for ($i = 0; $i < $len; $i++)
+		echo "-";
+	echo "\n";
+}
 
 class Util {
 	public static function get_line($prompt) {

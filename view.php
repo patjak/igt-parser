@@ -37,21 +37,52 @@ function cmd_view_testrun($path, $os, $machine, $date, $test)
 	if ($os === FALSE)
 		fatal("No OS specified");
 
-	if ($machine === FALSE)
-		fatal("No machine specified");
+	if ($machine === FALSE) {
+		cmd_os_date_summary($path, $os, $date);
+		return;
+	}
 
-	if ($date === FALSE)
-		fatal("No date specified");
+	if ($date === FALSE) {
+		print_results_all($path, $os, $machine);
+		return;
+	}
 
 	print_machine_info_on_date($path, $os, $machine, $date);
 
 	if ($test === FALSE)
-		print_results($path, $os, $machine, $date);
+		print_results_on_date($path, $os, $machine, $date);
 	else
 		print_test($path, $os, $machine, $date, $test);
 }
 
-function print_results($path, $os, $machine, $date)
+function print_results_all($path, $os, $machine)
+{
+	$dates = get_dates($path, $os, $machine);
+
+	$i = 0;
+	foreach ($dates as $date) {
+		if ($i++ == 0) {
+			print_summary_header("");
+			delimiter(12 * 8);
+		}
+
+		msg(Util::pad_str($date, 12), FALSE);
+		
+		$results = get_results($path, $os, $machine, $date);
+		if ($results === FALSE) {
+			msg("---");
+			continue;
+		}
+
+		$summary = get_summary($results);
+		print_summary($summary);
+	}
+
+	delimiter(12 * 8);
+	print_summary_header("");
+}
+
+function print_results_on_date($path, $os, $machine, $date)
 {
 	$results = get_results($path, $os, $machine, $date);
 	if ($results === FALSE)
@@ -59,16 +90,8 @@ function print_results($path, $os, $machine, $date)
 
 	msg("Results for ".$os." / ".$machine." / ".$date);
 
-	$summary = array();
-
 	$i = 1;
 	foreach ($results["tests"] as $name => $test) {
-		$result = $test["result"];
-		if (isset($summary[$result]))
-			$summary[$result]++;
-		else
-			$summary[$result] = 0;
-
 		$result = $test["result"];
 		$result = Util::pad_str($result, 12);
 		$str = $i.") ".$result.$name;
@@ -95,10 +118,11 @@ function print_results($path, $os, $machine, $date)
 		$i++;
 	}
 
-	msg("\nSummary:");
-	foreach ($summary as $name => $num) {
-		msg(" * ".$name.":\t".$num);
-	}
+	msg("");
+	$summary = get_summary($results);
+	print_summary_header();
+	delimiter(12 * 7);
+	print_summary($summary);
 }
 
 

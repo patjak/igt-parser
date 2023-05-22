@@ -1,39 +1,53 @@
 <?php
 
-function cmd_regression($path, $os, $machine, $date1, $date2)
+function cmd_regression($path, $os, $machine, $date, $date_cmp, $validate = TRUE)
 {
-	validate_input($path, $os, $machine, $date1, FALSE);
+	if ($validate)
+		validate_input($path, $os, $machine, $date, FALSE);
 
 	if ($os === FALSE)
 		fatal("No OS specified");
 
-	if ($machine === FALSE)
-		fatal("No machine specified");
+	if ($machine === FALSE) {
+		$machines = get_machines($path, $os);
+		foreach ($machines as $machine)
+			cmd_regression($path, $os, $machine, $date, $date_cmp, FALSE);
 
-	if ($date1 === FALSE)
-		fatal("No date specified");
+		return;
+	}
 
-	if ($date2 === FALSE) {
+	if ($date === FALSE) {
+		$dates = get_dates($path, $os, $machine);
+		$date = array_pop($dates);
+	}
+
+	if ($date_cmp === FALSE) {
 		$dates = get_dates($path, $os, $machine);
 
 		$prev_date = $dates[0];
 		for ($i = 0; $i < count($dates); $i++) {
-			$date = $dates[$i];
-			if ($date == $date1) {
-				$date2 = $prev_date;
+			$d = $dates[$i];
+			if ($d == $date) {
+				$date_cmp = $prev_date;
 				break;
 			}
-			$prev_date = $date;
+			$prev_date = $d;
 		}
 	}
 
-	$r1 = get_results($path, $os, $machine, $date1);
-	$r2 = get_results($path, $os, $machine, $date2);
+	$r1 = get_results($path, $os, $machine, $date);
+	$r2 = get_results($path, $os, $machine, $date_cmp);
 
-	if ($r1 === FALSE)
-		fatal("No results found for ".$date1);
-	if ($r2 === FALSE)
-		fatal("No results found for ".$date2);
+	msg(Util::pad_str($machine.":", 14), FALSE);
+
+	if ($r1 === FALSE) {
+		info("No results found for ".$date);
+		return;
+	}
+	if ($r2 === FALSE) {
+		info("No results found for ".$date_cmp);
+		return;
+	}
 
 	$regressions = array();
 	foreach ($r1["tests"] as $name1 => $test1) {
@@ -47,14 +61,14 @@ function cmd_regression($path, $os, $machine, $date1, $date2)
 	}
 
 	if (count($regressions) > 0) {
-		msg("Regressions when comparing ".$date2." and ".$date1.":");
+		msg("Regressions when comparing ".$date_cmp." and ".$date.":");
 		foreach ($regressions as $regression)
-			error(" * ".$regression);
+			error("  ".$regression);
 
 		exit(1);
 	}
 
-	msg("No regressions found comparing ".$date2." and ".$date1);
+	msg("No regressions found comparing ".$date_cmp." and ".$date);
 }
 
 ?>

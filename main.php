@@ -8,9 +8,10 @@ class Globals {
 msg("");
 
 $opts = array(	"path:",
+		"date:",
+		"date-cmp:",
 		"debug",
-		"verbose",
-		"summary");
+		"verbose");
 
 $args = Options::parse($argv, $opts);
 
@@ -21,7 +22,8 @@ if (isset(Options::$options["verbose"]))
 	Globals::$verbose = TRUE;
 
 $path = isset(Options::$options["path"]) ? Options::$options["path"] : FALSE;
-$summary = isset(Options::$options["summary"]) ? Options::$options["summary"] : FALSE;
+$date = isset(Options::$options["date"]) ? Options::$options["date"] : FALSE;
+$date_cmp = isset(Options::$options["date-cmp"]) ? Options::$options["date-cmp"] : FALSE;
 
 if ($path === FALSE) {
 	$path = getenv("IGT_RESULTS_PATH", TRUE);
@@ -43,23 +45,14 @@ case "list":
 case "view":
 	$os = isset($args[2]) ? $args[2] : FALSE;
 	$machine = isset($args[3]) ? $args[3] : FALSE;
-	$date = isset($args[4]) ? $args[4] : FALSE;
-	$test = isset($args[5]) ? $args[5] : FALSE;
+	$test = isset($args[4]) ? $args[4] : FALSE;
 	cmd_view_testrun($path, $os, $machine, $date, $test);
-	return 0;
-
-case "summary":
-	$os = isset($args[2]) ? $args[2] : FALSE;
-	$date = isset($args[3]) ? $args[3] : FALSE;
-	cmd_os_date_summary($path, $os, $date);
 	return 0;
 
 case "regression":
 	$os = isset($args[2]) ? $args[2] : FALSE;
 	$machine = isset($args[3]) ? $args[3] : FALSE;
-	$date1 = isset($args[4]) ? $args[4] : FALSE;
-	$date2 = isset($args[5]) ? $args[5] : FALSE;
-	cmd_regression($path, $os, $machine, $date1, $date2);
+	cmd_regression($path, $os, $machine, $date, $date_cmp);
 	return 0;
 
 default:
@@ -93,25 +86,25 @@ function validate_input($path, $os, $machine, $date, $test)
 	if ($os !== FALSE) {
 		$oses = get_oses($path);
 		if (!in_array($os, $oses))
-			fatal("Invalid OS specified");
+			fatal("Invalid OS specified: ".$os);
 	}
 
 	if ($machine !== FALSE) {
 		$machines = get_machines($path, $os);
 		if (!in_array($machine, $machines))
-			fatal("Invalid OS and machine combination specified");
+			fatal("Invalid OS and machine combination specified: ".$os." ".$machine);
 	}
 
 	if ($date !== FALSE && $os !== FALSE && $machine !== FALSE) {
 		$dates = get_dates($path, $os, $machine);
 		if (!in_array($date, $dates))
-			fatal("Invalid OS, machine and date combination specified");
+			fatal("Invalid OS, machine and date combination specified: ".$os." ".$machine." ".$date);
 	}
 
 	if ($test !== FALSE && !is_numeric($test) && $os !== FALSE && $machine !== FALSE && $date !== FALSE) {
 		$results = get_results($path, $os, $machine, $date);
 		if (!array_key_exists($test, $results["tests"]))
-			fatal("Invalid OS, machine, date and test combination specified");
+			fatal("Invalid OS, machine, date and test combination specified: ".$os." ".$machine." ".$date." ".$test);
 	}
 }
 
@@ -178,13 +171,19 @@ function print_usage($errno)
 
 	$execname = basename($argv[0]);
 
-	msg("Usage: ".$execname." --path=<path-to-igt-results> <command> [arguments] ");
-	msg("\n--path is not required if IGT_RESULTS_PATH is set");
+	msg("Usage: ".$execname." <command> [arguments] \n");
+	msg(Util::pad_str("--path <path-to-igt-results>", 28)."Specifies where the IGT results files are stored.");
+	msg(Util::pad_str("", 28)."Environment variable IGT_RESULTS_PATH can be used instead.");
+	msg(Util::pad_str("--date <YYYY-MM-DD>", 28)."For commands that can provide date specific results.");
+	msg(Util::pad_str("--date-cmp <YYYY-MM-DD>", 28).
+	   "Which date to compare for regressions agains");
+	
 	msg("\nCommands:");
 	msg("  list [os] [machine]");
-	msg("  view <os> <machine> <date>");
-	msg("  summary <os> <date>");
-	msg("  regression <os> <machine> <date 1> [date 2]");
+	msg("  view <os> <machine>");
+	msg("  regression <os> [machine]");
+	msg("    (if no date is specified, the last available date is used)");
+	msg("    (if no date-cmp is specified, the closest previous date is used)");
 
 	exit($errno);
 }
