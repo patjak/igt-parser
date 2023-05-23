@@ -52,8 +52,11 @@ case "view":
 case "regression":
 	$os = isset($args[2]) ? $args[2] : FALSE;
 	$machine = isset($args[3]) ? $args[3] : FALSE;
-	cmd_regression($path, $os, $machine, $date, $date_cmp);
-	return 0;
+	$ret = cmd_regression($path, $os, $machine, $date, $date_cmp);
+	if ($ret)
+		exit(1);
+
+	break;
 
 default:
 	error("No command specified\n");

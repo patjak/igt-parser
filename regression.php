@@ -8,12 +8,18 @@ function cmd_regression($path, $os, $machine, $date, $date_cmp, $validate = TRUE
 	if ($os === FALSE)
 		fatal("No OS specified");
 
+	$regression_found = FALSE;
+
 	if ($machine === FALSE) {
 		$machines = get_machines($path, $os);
-		foreach ($machines as $machine)
-			cmd_regression($path, $os, $machine, $date, $date_cmp, FALSE);
+		foreach ($machines as $machine) {
+			if (cmd_regression($path, $os, $machine, $date, $date_cmp, FALSE)) {
+				$regression_found = TRUE;
+				msg("");
+			}
+		}
 
-		return;
+		return $regression_found;
 	}
 
 	if ($date === FALSE) {
@@ -42,11 +48,11 @@ function cmd_regression($path, $os, $machine, $date, $date_cmp, $validate = TRUE
 
 	if ($r1 === FALSE) {
 		info("No results found for ".$date);
-		return;
+		return FALSE;
 	}
 	if ($r2 === FALSE) {
 		info("No results found for ".$date_cmp);
-		return;
+		return FALSE;
 	}
 
 	$regressions = array();
@@ -65,10 +71,12 @@ function cmd_regression($path, $os, $machine, $date, $date_cmp, $validate = TRUE
 		foreach ($regressions as $regression)
 			error("  ".$regression);
 
-		exit(1);
+		return TRUE;
 	}
 
 	msg("No regressions found comparing ".$date_cmp." and ".$date);
+
+	return $regression_found;
 }
 
 ?>
