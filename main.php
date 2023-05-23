@@ -177,19 +177,20 @@ function print_usage($errno)
 
 	$execname = basename($argv[0]);
 
-	msg("Usage: ".$execname." <command> [arguments] \n");
-	msg(Util::pad_str("--path <path-to-igt-results>", 28)."Specifies where the IGT results files are stored.");
-	msg(Util::pad_str("", 28)."Environment variable IGT_RESULTS_PATH can be used instead.");
-	msg(Util::pad_str("--date <YYYY-MM-DD>", 28)."For commands that can provide date specific results.");
-	msg(Util::pad_str("--date-cmp <YYYY-MM-DD>", 28).
-	   "Which date to compare for regressions agains");
-	
-	msg("\nCommands:");
+	msg("Usage: ".$execname." <command> [arguments] [options]\n");
+
+	msg("Commands:");
 	msg("  list [os] [machine]");
 	msg("  view <os> <machine>");
 	msg("  regression <os> [machine]");
 	msg("    (if no date is specified, the last available date is used)");
 	msg("    (if no date-cmp is specified, the closest previous date is used)");
+
+	msg("\nOptions:");
+	msg(Util::pad_str("  --path <path-to-igt-results>", 30)."Specifies where the IGT results files are stored.");
+	msg(Util::pad_str("", 30)."Environment variable IGT_RESULTS_PATH can be used instead.");
+	msg(Util::pad_str("  --date <YYYY-MM-DD>", 30)."For commands that can provide date specific results.");
+	msg(Util::pad_str("  --date-cmp <YYYY-MM-DD>", 30)."Which date to compare for regressions agains");
 
 	exit($errno);
 }
