@@ -52,6 +52,9 @@ case "view":
 case "regression":
 	$os = isset($args[2]) ? $args[2] : FALSE;
 	$machine = isset($args[3]) ? $args[3] : FALSE;
+	if ($os !== FALSE && $machine !== FALSE && $date !== FALSE)
+		print_machine_info_on_date($path, $os, $machine, $date);
+
 	$ret = cmd_regression($path, $os, $machine, $date, $date_cmp);
 	if ($ret)
 		exit(1);
