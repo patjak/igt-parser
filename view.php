@@ -34,8 +34,12 @@ function cmd_view_testrun($path, $os, $machine, $date, $test)
 {
 	validate_input($path, $os, $machine, $date, $test);
 
-	if ($os === FALSE)
-		fatal("No OS specified");
+	if ($os === FALSE) {
+		error("No OS specified\n");
+
+		print_oses($path);
+		return 1;
+	}
 
 	if ($machine === FALSE) {
 		cmd_os_date_summary($path, $os, $date);

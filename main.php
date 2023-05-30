@@ -180,8 +180,7 @@ function print_usage($errno)
 	msg("Usage: ".$execname." <command> [arguments] [options]\n");
 
 	msg("Commands:");
-	msg("  list [os] [machine]");
-	msg("  view <os> <machine>");
+	msg("  view <os> [machine] [test]");
 	msg("  regression <os> [machine]");
 	msg("    (if no date is specified, the last available date is used)");
 	msg("    (if no date-cmp is specified, the closest previous date is used)");
