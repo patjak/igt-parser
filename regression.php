@@ -68,6 +68,10 @@ function cmd_regression($path, $os, $machine, $date, $date_cmp, $validate = TRUE
 
 	if (count($regressions) > 0) {
 		msg("Regressions when comparing ".$date_cmp." and ".$date.":");
+		if ($r1["uname"] != $r2["uname"]) {
+			msg("  ".$date_cmp.": ".$r2["uname"]);
+			msg("  ".$date.": ".$r1["uname"]);
+		}
 		foreach ($regressions as $regression)
 			error("  ".$regression);
 
