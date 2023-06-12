@@ -152,8 +152,9 @@ function print_machine_info_on_date($path, $os, $machine, $date)
 
 	msg(Util::pad_str("Machine:", 16).$machine);
 	msg(Util::pad_str("uname: ", 16).$r["uname"]);
-	$time = round($r["time_elapsed"]["end"] - $r["time_elapsed"]["start"], 2);
-	msg(Util::pad_str("Time elapsed: ", 16).$time." seconds");
+	$time = $r["time_elapsed"]["end"] - $r["time_elapsed"]["start"];
+	$time = gmdate("H:i:s", $time);
+	msg(Util::pad_str("Time elapsed: ", 16).$time." (h:m:s)");
 	msg(Util::pad_str("VGA info: ", 16).$vga_info);
 }
 

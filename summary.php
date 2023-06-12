@@ -26,12 +26,17 @@ function cmd_os_date_summary($path, $os, $date)
 
 	msg("Results summary for OS ".$os." on date ".$date."\n");
 	print_summary_header("");
-	delimiter(12 * 8);
+	delimiter(12 * 9);
 
 	$i = 1;
 	$machines = get_machines($path, $os);
 	foreach ($machines as $m) {
 		$r = get_results($path, $os, $m, $date);
+		if (isset($r["time_elapsed"]))
+			$time = $r["time_elapsed"]["end"] - $r["time_elapsed"]["start"];
+		else
+			$time = 0;
+
 		if ($r === FALSE) {
 			msg(Util::pad_str($m, 12), FALSE);
 			error("No results");
@@ -40,7 +45,7 @@ function cmd_os_date_summary($path, $os, $date)
 
 		msg(Util::pad_str($m, 12), FALSE);
 		$summary = get_summary($r);
-		print_summary($summary);
+		print_summary($summary, $time);
 
 	}
 }
@@ -92,10 +97,11 @@ function print_summary_header($subject = FALSE)
 	msg(Util::pad_str("dmesg-warn", $len), FALSE);
 	msg(Util::pad_str("dmesg-fail", $len), FALSE);
 	msg(Util::pad_str("incomplete", $len), FALSE);
-	msg(Util::pad_str("skip", $len));
+	msg(Util::pad_str("skip", $len), FALSE);
+	msg(Util::pad_str("time elapsed", $len));
 }
 
-function print_summary($summary)
+function print_summary($summary, $time)
 {
 	$len = 12;
 
@@ -120,7 +126,7 @@ function print_summary($summary)
 			msg($num, FALSE);
 		}
 	}
-	msg("");
+	msg(gmdate("H:i:s", $time));
 }
 
 ?>

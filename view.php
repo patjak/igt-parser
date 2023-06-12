@@ -1,5 +1,6 @@
 <?php
 
+// Print details about a single test from a single testrun
 function print_test($path, $os, $machine, $date, $test_name)
 {
 	$results = get_results($path, $os, $machine, $date);
@@ -47,7 +48,7 @@ function cmd_view_testrun($path, $os, $machine, $date, $test)
 	}
 
 	if ($date === FALSE) {
-		print_results_all($path, $os, $machine);
+		print_results_all_dates($path, $os, $machine);
 		return;
 	}
 
@@ -59,7 +60,8 @@ function cmd_view_testrun($path, $os, $machine, $date, $test)
 		print_test($path, $os, $machine, $date, $test);
 }
 
-function print_results_all($path, $os, $machine)
+// Print results from all dates from a specified machine
+function print_results_all_dates($path, $os, $machine)
 {
 	$dates = get_dates($path, $os, $machine);
 
@@ -67,7 +69,7 @@ function print_results_all($path, $os, $machine)
 	foreach ($dates as $date) {
 		if ($i++ == 0) {
 			print_summary_header("");
-			delimiter(12 * 8);
+			delimiter(12 * 9);
 		}
 
 		msg(Util::pad_str($date, 12), FALSE);
@@ -78,11 +80,12 @@ function print_results_all($path, $os, $machine)
 			continue;
 		}
 
+		$time = $results["time_elapsed"]["end"] - $results["time_elapsed"]["start"];
 		$summary = get_summary($results);
-		print_summary($summary);
+		print_summary($summary, $time);
 	}
 
-	delimiter(12 * 8);
+	delimiter(12 * 9);
 	print_summary_header("");
 }
 
@@ -125,8 +128,10 @@ function print_results_on_date($path, $os, $machine, $date)
 	msg("");
 	$summary = get_summary($results);
 	print_summary_header();
-	delimiter(12 * 7);
-	print_summary($summary);
+	delimiter(12 * 9);
+
+	$time = $results["time_elapsed"]["end"] - $results["time_elapsed"]["start"];
+	print_summary($summary, $time);
 }
 
 
