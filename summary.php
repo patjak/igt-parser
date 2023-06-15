@@ -39,7 +39,11 @@ function cmd_os_date_summary($path, $os, $date)
 
 		if ($r === FALSE) {
 			msg(Util::pad_str($m, 12), FALSE);
-			error("No results");
+			if (is_dir($path."/".$os."/".$m."/".$date))
+				info("Incomplete");
+			else
+				error("No results");
+
 			continue;
 		}
 
