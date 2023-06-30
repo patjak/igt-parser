@@ -36,12 +36,6 @@ if ($path === FALSE) {
 $cmd = isset($args[1]) ? $args[1] : FALSE;
 
 switch (strtolower($cmd)) {
-case "list":
-	$os = isset($args[2]) ? $args[2] : FALSE;
-	$machine = isset($args[3]) ? $args[3] : FALSE;
-	cmd_list($path, $os, $machine);
-	return 0;
-
 case "view":
 	$os = isset($args[2]) ? $args[2] : FALSE;
 	$machine = isset($args[3]) ? $args[3] : FALSE;
