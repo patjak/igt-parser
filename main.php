@@ -116,6 +116,8 @@ function print_oses($path)
 	foreach($oses as $os) {
 		if ($os == "")
 			continue;
+		if (!is_dir($path."/".$os))
+			continue;
 		msg("  ".$os);
 	}
 
