@@ -64,10 +64,18 @@ function cmd_view_testrun($path, $os, $machine, $date, $test)
 function print_results_all_dates($path, $os, $machine)
 {
 	$dates = get_dates($path, $os, $machine);
+	$limit = isset(Options::$options["limit"]) ? Options::$options["limit"] : FALSE;
 
-	$i = 0;
-	foreach ($dates as $date) {
-		if ($i++ == 0) {
+	if ($limit !== FALSE && $limit < count($dates))
+		$i = count($dates) - $limit; // Limit results to last 10 days
+	else
+		$i = 0;
+
+
+	for (; $i < count($dates); $i++) {
+		$date = $dates[$i];
+
+		if ($i == 0) {
 			print_summary_header("");
 			delimiter(12 * 9);
 		}

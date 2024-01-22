@@ -11,7 +11,8 @@ $opts = array(	"path:",
 		"date:",
 		"date-cmp:",
 		"debug",
-		"verbose");
+		"verbose",
+		"limit:");
 
 $args = Options::parse($argv, $opts);
 
