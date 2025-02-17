@@ -6,6 +6,7 @@ require_once("util.php");
 require_once("view.php");
 require_once("summary.php");
 require_once("regression.php");
+require_once("purge.php");
 require_once("main.php");
 
 ?>

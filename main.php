@@ -12,7 +12,9 @@ $opts = array(	"path:",
 		"date-cmp:",
 		"debug",
 		"verbose",
-		"limit:");
+		"limit:",
+		"months:",
+		"non-interactive");
 
 $args = Options::parse($argv, $opts);
 
@@ -54,6 +56,17 @@ case "regression":
 	if ($ret)
 		exit(1);
 
+	break;
+
+case "purge":
+	$os = isset($args[2]) ? $args[2] : FALSE;
+	if ($os === FALSE) {
+		error("OS must be specified\n");
+		print_oses($path);
+		exit(1);
+	}
+
+	cmd_purge($path, $os);
 	break;
 
 default:
@@ -182,6 +195,7 @@ function print_usage($errno)
 	msg("  regression <os> [machine]");
 	msg("    (if no date is specified, the last available date is used)");
 	msg("    (if no date-cmp is specified, the closest previous date is used)");
+	msg("  purge <os>");
 
 	msg("\nOptions:");
 	msg(Util::pad_str("  --path <path-to-igt-results>", 30)."Specifies where the IGT results files are stored.");
