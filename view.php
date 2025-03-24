@@ -1,9 +1,9 @@
 <?php
 
 // Print details about a single test from a single testrun
-function print_test($path, $os, $machine, $date, $test_name)
+function print_test($path, $os, $machine, $sequence, $test_name)
 {
-	$results = get_results($path, $os, $machine, $date);
+	$results = get_results($path, $os, $machine, $sequence);
 
 	$i = 1;
 	foreach ($results["tests"] as $name => $test) {
@@ -31,9 +31,9 @@ function print_test($path, $os, $machine, $date, $test_name)
 	fatal("Test not found");
 }
 
-function cmd_view_testrun($path, $os, $machine, $date, $test)
+function cmd_view_testrun($path, $os, $machine, $sequence, $test)
 {
-	validate_input($path, $os, $machine, $date, $test);
+	validate_input($path, $os, $machine, $sequence, $test);
 
 	if ($os === FALSE) {
 		error("No OS specified\n");
@@ -43,46 +43,46 @@ function cmd_view_testrun($path, $os, $machine, $date, $test)
 	}
 
 	if ($machine === FALSE) {
-		cmd_os_date_summary($path, $os, $date);
+		cmd_os_sequence_summary($path, $os, $sequence);
 		return;
 	}
 
-	if ($date === FALSE) {
-		print_results_all_dates($path, $os, $machine);
+	if ($sequence === FALSE) {
+		print_results_all_sequences($path, $os, $machine);
 		return;
 	}
 
-	print_machine_info_on_date($path, $os, $machine, $date);
+	print_machine_info_on_sequence($path, $os, $machine, $sequence);
 
 	if ($test === FALSE)
-		print_results_on_date($path, $os, $machine, $date);
+		print_results_on_sequence($path, $os, $machine, $sequence);
 	else
-		print_test($path, $os, $machine, $date, $test);
+		print_test($path, $os, $machine, $sequence, $test);
 }
 
-// Print results from all dates from a specified machine
-function print_results_all_dates($path, $os, $machine)
+// Print results from all sequences from a specified machine
+function print_results_all_sequences($path, $os, $machine)
 {
-	$dates = get_dates($path, $os, $machine);
+	$sequences = get_sequences($path, $os, $machine);
 	$limit = isset(Options::$options["limit"]) ? Options::$options["limit"] : FALSE;
 
-	if ($limit !== FALSE && $limit < count($dates))
-		$i = count($dates) - $limit; // Limit results to last 10 days
+	if ($limit !== FALSE && $limit < count($sequences))
+		$i = count($sequences) - $limit; // Limit results to last 10 days
 	else
 		$i = 0;
 
 
-	for (; $i < count($dates); $i++) {
-		$date = $dates[$i];
+	for (; $i < count($sequences); $i++) {
+		$sequence = $sequences[$i];
 
 		if ($i == 0) {
 			print_summary_header("");
 			delimiter(12 * 9);
 		}
 
-		msg(Util::pad_str($date, 12), FALSE);
+		msg(Util::pad_str($sequence, 12), FALSE);
 		
-		$results = get_results($path, $os, $machine, $date);
+		$results = get_results($path, $os, $machine, $sequence);
 		if ($results === FALSE) {
 			msg("---");
 			continue;
@@ -97,13 +97,13 @@ function print_results_all_dates($path, $os, $machine)
 	print_summary_header("");
 }
 
-function print_results_on_date($path, $os, $machine, $date)
+function print_results_on_sequence($path, $os, $machine, $sequence)
 {
-	$results = get_results($path, $os, $machine, $date);
+	$results = get_results($path, $os, $machine, $sequence);
 	if ($results === FALSE)
 		fatal("Failed to open results.json file");
 
-	msg("Results for ".$os." / ".$machine." / ".$date);
+	msg("Results for ".$os." / ".$machine." / ".$sequence);
 
 	$i = 1;
 	foreach ($results["tests"] as $name => $test) {

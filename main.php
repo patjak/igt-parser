@@ -8,8 +8,8 @@ class Globals {
 msg("");
 
 $opts = array(	"path:",
-		"date:",
-		"date-cmp:",
+		"sequence:",
+		"sequence-cmp:",
 		"debug",
 		"verbose",
 		"limit:",
@@ -25,8 +25,8 @@ if (isset(Options::$options["verbose"]))
 	Globals::$verbose = TRUE;
 
 $path = isset(Options::$options["path"]) ? Options::$options["path"] : FALSE;
-$date = isset(Options::$options["date"]) ? Options::$options["date"] : FALSE;
-$date_cmp = isset(Options::$options["date-cmp"]) ? Options::$options["date-cmp"] : FALSE;
+$sequence = isset(Options::$options["sequence"]) ? Options::$options["sequence"] : FALSE;
+$sequence_cmp = isset(Options::$options["sequence-cmp"]) ? Options::$options["sequence-cmp"] : FALSE;
 
 if ($path === FALSE) {
 	$path = getenv("IGT_RESULTS_PATH", TRUE);
@@ -38,28 +38,36 @@ if ($path === FALSE) {
 
 $cmd = isset($args[1]) ? $args[1] : FALSE;
 
+$os = isset($args[2]) ? $args[2] : FALSE;
+
+// Find last sequence for os
+$i = 1;
+if ($sequence === FALSE && $os !== FALSE) {
+	while (file_exists($path."/".$os."/".$i))
+		$i++;
+
+	$sequence = $i - 1;
+}
+
 switch (strtolower($cmd)) {
 case "view":
-	$os = isset($args[2]) ? $args[2] : FALSE;
 	$machine = isset($args[3]) ? $args[3] : FALSE;
 	$test = isset($args[4]) ? $args[4] : FALSE;
-	cmd_view_testrun($path, $os, $machine, $date, $test);
+	cmd_view_testrun($path, $os, $machine, $sequence, $test);
 	return 0;
 
 case "regression":
-	$os = isset($args[2]) ? $args[2] : FALSE;
 	$machine = isset($args[3]) ? $args[3] : FALSE;
-	if ($os !== FALSE && $machine !== FALSE && $date !== FALSE)
-		print_machine_info_on_date($path, $os, $machine, $date);
+	if ($os !== FALSE && $machine !== FALSE && $sequence !== FALSE)
+		print_machine_info_on_sequence($path, $os, $machine, $sequence);
 
-	$ret = cmd_regression($path, $os, $machine, $date, $date_cmp);
+	$ret = cmd_regression($path, $os, $machine, $sequence, $sequence_cmp);
 	if ($ret)
 		exit(1);
 
 	break;
 
 case "purge":
-	$os = isset($args[2]) ? $args[2] : FALSE;
 	if ($os === FALSE) {
 		error("OS must be specified\n");
 		print_oses($path);
@@ -75,11 +83,11 @@ default:
 }
 
 function get_oses($path) { return Util::get_directory_contents($path, 1); }
-function get_machines($path, $os) { return Util::get_directory_contents($path."/".$os, 1); }
-function get_dates($path, $os, $machine) { return Util::get_directory_contents($path."/".$os."/".$machine, 1); }
-function get_results($path, $os, $machine, $date)
+function get_sequences($path, $os) { return Util::get_directory_contents($path."/".$os, 1); }
+function get_machines($path, $os, $sequence) { return Util::get_directory_contents($path."/".$os."/".$sequence, 1); }
+function get_results($path, $os, $machine, $sequence)
 {
-	$filename = $path."/".$os."/".$machine."/".$date."/results.json";
+	$filename = $path."/".$os."/".$sequence."/".$machine."/results.json";
 	if (!file_exists($filename))
 		return FALSE;
 
@@ -94,8 +102,8 @@ function get_results($path, $os, $machine, $date)
 	return $json;
 }
 
-// Validate input
-function validate_input($path, $os, $machine, $date, $test)
+// Valisequence input
+function validate_input($path, $os, $machine, $sequence, $test)
 {
 	if ($os !== FALSE) {
 		$oses = get_oses($path);
@@ -104,21 +112,21 @@ function validate_input($path, $os, $machine, $date, $test)
 	}
 
 	if ($machine !== FALSE) {
-		$machines = get_machines($path, $os);
+		$machines = get_machines($path, $os, $sequence);
 		if (!in_array($machine, $machines))
-			fatal("Invalid OS and machine combination specified: ".$os." ".$machine);
+			fatal("Invalid OS, sequence and machine combination specified:\nOS: ".$os."\nSequence: ".$sequence." ".$machine);
 	}
 
-	if ($date !== FALSE && $os !== FALSE && $machine !== FALSE) {
-		$dates = get_dates($path, $os, $machine);
-		if (!in_array($date, $dates))
-			fatal("Invalid OS, machine and date combination specified: ".$os." ".$machine." ".$date);
+	if ($sequence !== FALSE && $os !== FALSE) {
+		$sequences = get_sequences($path, $os);
+		if (!in_array($sequence, $sequences))
+			fatal("Invalid OS and sequence combination specified:\nOS: ".$os."\nSequence: ".$sequence);
 	}
 
-	if ($test !== FALSE && !is_numeric($test) && $os !== FALSE && $machine !== FALSE && $date !== FALSE) {
-		$results = get_results($path, $os, $machine, $date);
+	if ($test !== FALSE && !is_numeric($test) && $os !== FALSE && $machine !== FALSE && $sequence !== FALSE) {
+		$results = get_results($path, $os, $machine, $sequence);
 		if (!array_key_exists($test, $results["tests"]))
-			fatal("Invalid OS, machine, date and test combination specified: ".$os." ".$machine." ".$date." ".$test);
+			fatal("Invalid OS, machine, sequence and test combination specified: ".$os." ".$machine." ".$sequence." ".$test);
 	}
 }
 
@@ -152,31 +160,40 @@ function print_machines($path, $os)
 	msg("");
 }
 
-function print_machine_info_on_date($path, $os, $machine, $date)
+function print_machine_info_on_sequence($path, $os, $machine, $sequence)
 {
-	$r = get_results($path, $os, $machine, $date);
-	$filename = $path."/".$os."/".$machine."/".$date."/vga-info.txt";
+	$fullpath = $path."/".$os."/".$sequence."/".$machine;
+	$r = get_results($path, $os, $machine, $sequence);
+	if ($r === FALSE)
+		fatal("Failed to find results for ".$os." ".$sequence." ".$machine);
+
 	$vga_info = "";
-	if (file_exists($filename))
-		$vga_info = file_get_contents($filename);
+	if (file_exists($fullpath."/vga-info.txt"))
+		$vga_info = trim(file_get_contents($fullpath."/vga-info.txt"));
+
+	$date = "";
+	if (file_exists($fullpath."/date.txt"))
+		$date = trim(file_get_contents($fullpath."/date.txt"));
 
 	msg(Util::pad_str("Machine:", 16).$machine);
+	msg(Util::pad_str("Date: ",16).$date);
 	msg(Util::pad_str("uname: ", 16).$r["uname"]);
 	$time = $r["time_elapsed"]["end"] - $r["time_elapsed"]["start"];
 	$time = gmdate("H:i:s", $time);
 	msg(Util::pad_str("Time elapsed: ", 16).$time." (h:m:s)");
 	msg(Util::pad_str("VGA info: ", 16).$vga_info);
+	msg("");
 }
 
-function print_dates($path, $os, $machine)
+function print_sequences($path, $os, $machine)
 {
-	$dates = Util::get_directory_contents($path."/".$os."/".$machine, 1);
+	$sequences = Util::get_directory_contents($path."/".$os."/".$machine, 1);
 
-	msg("Available dates");
-	foreach($dates as $date) {
-		if ($date == "")
+	msg("Available sequences");
+	foreach($sequences as $sequence) {
+		if ($sequence == "")
 			continue;
-		msg("  ".$date);
+		msg("  ".$sequence);
 	}
 
 	msg("");
@@ -193,15 +210,15 @@ function print_usage($errno)
 	msg("Commands:");
 	msg("  view <os> [machine] [test]");
 	msg("  regression <os> [machine]");
-	msg("    (if no date is specified, the last available date is used)");
-	msg("    (if no date-cmp is specified, the closest previous date is used)");
+	msg("    (if no sequence is specified, the last available sequence is used)");
+	msg("    (if no sequence-cmp is specified, the closest previous sequence is used)");
 	msg("  purge <os>");
 
 	msg("\nOptions:");
 	msg(Util::pad_str("  --path <path-to-igt-results>", 30)."Specifies where the IGT results files are stored.");
 	msg(Util::pad_str("", 30)."Environment variable IGT_RESULTS_PATH can be used instead.");
-	msg(Util::pad_str("  --date <YYYY-MM-DD>", 30)."For commands that can provide date specific results.");
-	msg(Util::pad_str("  --date-cmp <YYYY-MM-DD>", 30)."Which date to compare for regressions agains");
+	msg(Util::pad_str("  --sequence <YYYY-MM-DD>", 30)."For commands that can provide sequence specific results.");
+	msg(Util::pad_str("  --sequence-cmp <YYYY-MM-DD>", 30)."Which sequence to compare for regressions agains");
 
 	exit($errno);
 }

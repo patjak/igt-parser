@@ -1,37 +1,37 @@
 <?php
 
-function cmd_os_date_summary($path, $os, $date)
+function cmd_os_sequence_summary($path, $os, $sequence)
 {
-	validate_input($path, $os, FALSE, $date, FALSE);
+	validate_input($path, $os, FALSE, $sequence, FALSE);
 
 	if ($os === FALSE)
 		fatal("No OS specified");
 
-	if ($date === FALSE) {
-		$available_dates = array();
+	if ($sequence === FALSE) {
+		$available_sequences = array();
 		$machines = get_machines($path, $os);
 		foreach ($machines as $machine) {
-			$dates = get_dates($path, $os, $machine);
-			foreach ($dates as $date) {
-				$available_dates[] = $date;
+			$sequences = get_sequences($path, $os, $machine);
+			foreach ($sequences as $sequence) {
+				$available_sequences[] = $sequence;
 			}
 		}
-		$available_dates = array_unique($available_dates);
-		sort($available_dates);
+		$available_sequences = array_unique($available_sequences);
+		sort($available_sequences);
 
-		$last_date = array_pop($available_dates);
-		cmd_os_date_summary($path, $os, $last_date);
+		$last_sequence = array_pop($available_sequences);
+		cmd_os_sequence_summary($path, $os, $last_sequence);
 		return;
 	}
 
-	msg("Results summary for OS ".$os." on date ".$date."\n");
+	msg("Results summary for OS ".$os." on sequence ".$sequence."\n");
 	print_summary_header("");
 	delimiter(12 * 9);
 
 	$i = 1;
-	$machines = get_machines($path, $os);
+	$machines = get_machines($path, $os, $sequence);
 	foreach ($machines as $m) {
-		$r = get_results($path, $os, $m, $date);
+		$r = get_results($path, $os, $m, $sequence);
 		if (isset($r["time_elapsed"]))
 			$time = $r["time_elapsed"]["end"] - $r["time_elapsed"]["start"];
 		else
@@ -39,7 +39,7 @@ function cmd_os_date_summary($path, $os, $date)
 
 		if ($r === FALSE) {
 			msg(Util::pad_str($m, 12), FALSE);
-			if (is_dir($path."/".$os."/".$m."/".$date))
+			if (is_dir($path."/".$os."/".$m."/".$sequence))
 				info("Incomplete");
 			else
 				error("No results");
