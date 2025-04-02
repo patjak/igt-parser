@@ -24,7 +24,9 @@ function cmd_os_sequence_summary($path, $os, $sequence)
 		return;
 	}
 
-	msg("Results summary for OS ".$os." on sequence ".$sequence."\n");
+	$date = trim(file_get_contents($path."/".$os."/".$sequence."/date.txt"));
+
+	msg("Results summary for OS ".$os." on sequence ".$sequence." (".$date.")\n");
 	print_summary_header("");
 	delimiter(12 * 9);
 
