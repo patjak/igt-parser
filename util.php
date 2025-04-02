@@ -92,7 +92,7 @@ class Util {
 		$path = $res[5];
 	}
 
-        public static function get_directory_contents($path, $depth) {
+        public static function get_directory_contents($path, $depth, $exclude = array()) {
 		$path .= "/";
 		$res = shell_exec("find ".$path." -maxdepth ".$depth." 2> /dev/null");
 		$rows = explode(PHP_EOL, $res);
@@ -110,9 +110,11 @@ class Util {
 			if (count($row) != $depth)
 				continue;
 
-			$entries[] = $entry;
+			if (!in_array($entry, $exclude))
+				$entries[] = $entry;
 		}
 
+		sort($entries);
 		return $entries;
 	}
 

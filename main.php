@@ -84,7 +84,7 @@ default:
 
 function get_oses($path) { return Util::get_directory_contents($path, 1); }
 function get_sequences($path, $os) { return Util::get_directory_contents($path."/".$os, 1); }
-function get_machines($path, $os, $sequence) { return Util::get_directory_contents($path."/".$os."/".$sequence, 1); }
+function get_machines($path, $os, $sequence) { return Util::get_directory_contents($path."/".$os."/".$sequence, 1, array("date.txt")); }
 function get_results($path, $os, $machine, $sequence)
 {
 	$filename = $path."/".$os."/".$sequence."/".$machine."/results.json";
