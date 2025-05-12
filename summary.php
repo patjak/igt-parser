@@ -2,29 +2,19 @@
 
 function cmd_os_sequence_summary($path, $os, $sequence)
 {
+	if ($sequence === FALSE)
+		$sequence = find_last_sequence($path, $os, $sequence);
+
 	validate_input($path, $os, FALSE, $sequence, FALSE);
 
 	if ($os === FALSE)
 		fatal("No OS specified");
 
-	if ($sequence === FALSE) {
-		$available_sequences = array();
-		$machines = get_machines($path, $os);
-		foreach ($machines as $machine) {
-			$sequences = get_sequences($path, $os, $machine);
-			foreach ($sequences as $sequence) {
-				$available_sequences[] = $sequence;
-			}
-		}
-		$available_sequences = array_unique($available_sequences);
-		sort($available_sequences);
-
-		$last_sequence = array_pop($available_sequences);
-		cmd_os_sequence_summary($path, $os, $last_sequence);
-		return;
-	}
-
-	$date = trim(file_get_contents($path."/".$os."/".$sequence."/date.txt"));
+	$date_file = $path."/".$os."/".$sequence."/date.txt";
+	if (file_exists($date_file))
+		$date = trim(file_get_contents($date_file));
+	else
+		$date = "";
 
 	msg("Results summary for OS ".$os." on sequence ".$sequence." (".$date.")\n");
 	print_summary_header("");

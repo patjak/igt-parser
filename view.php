@@ -63,6 +63,7 @@ function cmd_view_testrun($path, $os, $machine, $sequence, $test)
 // Print results from all sequences from a specified machine
 function print_results_all_sequences($path, $os, $machine)
 {
+	msg("Sequence results from ".$os." on ".$machine."\n");
 	$sequences = get_sequences($path, $os, $machine);
 	$limit = isset(Options::$options["limit"]) ? Options::$options["limit"] : FALSE;
 

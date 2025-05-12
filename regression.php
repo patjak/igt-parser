@@ -2,6 +2,7 @@
 
 function cmd_regression($path, $os, $machine, $sequence, $sequence_cmp, $validate = TRUE)
 {
+
 	if ($validate)
 		validate_input($path, $os, $machine, $sequence, FALSE);
 

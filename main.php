@@ -8,7 +8,6 @@ class Globals {
 msg("");
 
 $opts = array(	"path:",
-		"sequence:",
 		"sequence-cmp:",
 		"debug",
 		"verbose",
@@ -25,7 +24,6 @@ if (isset(Options::$options["verbose"]))
 	Globals::$verbose = TRUE;
 
 $path = isset(Options::$options["path"]) ? Options::$options["path"] : FALSE;
-$sequence = isset(Options::$options["sequence"]) ? Options::$options["sequence"] : FALSE;
 $sequence_cmp = isset(Options::$options["sequence-cmp"]) ? Options::$options["sequence-cmp"] : FALSE;
 
 if ($path === FALSE) {
@@ -40,24 +38,30 @@ $cmd = isset($args[1]) ? $args[1] : FALSE;
 
 $os = isset($args[2]) ? $args[2] : FALSE;
 
-// Find last sequence for os
-$i = 1;
-if ($sequence === FALSE && $os !== FALSE) {
-	while (file_exists($path."/".$os."/".$i))
-		$i++;
-
-	$sequence = $i - 1;
-}
-
 switch (strtolower($cmd)) {
 case "view":
 	$machine = isset($args[3]) ? $args[3] : FALSE;
-	$test = isset($args[4]) ? $args[4] : FALSE;
+	$sequence = isset($args[4]) ? $args[4] : FALSE;
+	$test = isset($args[5]) ? $args[5] : FALSE;
 	cmd_view_testrun($path, $os, $machine, $sequence, $test);
 	return 0;
 
 case "regression":
 	$machine = isset($args[3]) ? $args[3] : FALSE;
+	$sequence = isset($args[4]) ? $args[4] : FALSE;
+
+	if ($sequence === FALSE)
+		$sequence = find_last_sequence($path, $os, $sequence);
+
+	if ($os === FALSE) {
+		error("No OS specified\n");
+
+		print_oses($path);
+		return 1;
+	}
+
+	validate_input($path, $os, $machine, $sequence, FALSE);
+
 	if ($os !== FALSE && $machine !== FALSE && $sequence !== FALSE)
 		print_machine_info_on_sequence($path, $os, $machine, $sequence);
 
@@ -82,6 +86,18 @@ default:
 	print_usage(1);
 }
 
+// Find last sequence for os
+function find_last_sequence($path, $os, $sequence) {
+	$i = 1;
+	if ($sequence === FALSE && $os !== FALSE) {
+		while (file_exists($path."/".$os."/".$i))
+			$i++;
+
+		$sequence = $i - 1;
+	}
+
+	return $sequence;
+}
 function get_oses($path) { return Util::get_directory_contents($path, 1); }
 function get_sequences($path, $os) { return Util::get_directory_contents($path."/".$os, 1); }
 function get_machines($path, $os, $sequence) { return Util::get_directory_contents($path."/".$os."/".$sequence, 1, array("date.txt")); }
@@ -112,9 +128,10 @@ function validate_input($path, $os, $machine, $sequence, $test)
 	}
 
 	if ($machine !== FALSE) {
+		$sequence = find_last_sequence($path, $os, $sequence);
 		$machines = get_machines($path, $os, $sequence);
 		if (!in_array($machine, $machines))
-			fatal("Invalid OS, sequence and machine combination specified:\nOS: ".$os."\nSequence: ".$sequence." ".$machine);
+			fatal("Invalid OS, sequence and machine combination specified:\nOS: ".$os."\nSequence: ".$sequence."\nMachine: ".$machine);
 	}
 
 	if ($sequence !== FALSE && $os !== FALSE) {
@@ -208,8 +225,8 @@ function print_usage($errno)
 	msg("Usage: ".$execname." <command> [arguments] [options]\n");
 
 	msg("Commands:");
-	msg("  view <os> [machine] [test]");
-	msg("  regression <os> [machine]");
+	msg("  view <os> [machine] [sequence] [test]");
+	msg("  regression <os> [machine] [sequence]");
 	msg("    (if no sequence is specified, the last available sequence is used)");
 	msg("    (if no sequence-cmp is specified, the closest previous sequence is used)");
 	msg("  purge <os>");
@@ -217,8 +234,7 @@ function print_usage($errno)
 	msg("\nOptions:");
 	msg(Util::pad_str("  --path <path-to-igt-results>", 30)."Specifies where the IGT results files are stored.");
 	msg(Util::pad_str("", 30)."Environment variable IGT_RESULTS_PATH can be used instead.");
-	msg(Util::pad_str("  --sequence <YYYY-MM-DD>", 30)."For commands that can provide sequence specific results.");
-	msg(Util::pad_str("  --sequence-cmp <YYYY-MM-DD>", 30)."Which sequence to compare for regressions agains");
+	msg(Util::pad_str("  --sequence-cmp <no>", 30)."Which sequence to compare for regressions agains");
 
 	exit($errno);
 }
